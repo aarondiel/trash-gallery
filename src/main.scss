@@ -77,15 +77,20 @@ main {
 		}
 	}
 
-	> .controls {
-		display: none;
-	}
+	> .controls { display: none; }
 
 	> .preview {
 		display: flex;
 		overflow-y: scroll;
 		scroll-snap-type: x proximity;
 		gap: 2rem;
+
+		scrollbar-color: white transparent;
+		&::-webkit-scrollbar { height: 0.2rem; }
+		&::-webkit-scrollbar-thumb {
+			background: white;
+			border-radius: 0.2rem;
+		}
 
 		> img {
 			border-radius: 0.2rem;
