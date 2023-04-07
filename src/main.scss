@@ -49,6 +49,8 @@ main {
 	> .title {
 		grid-area: title;
 		text-align: center;
+		display: grid;
+		place-items: center;
 	}
 
 	> .images {
@@ -79,10 +81,12 @@ main {
 	> .preview {
 		display: flex;
 		overflow-y: scroll;
+			scroll-snap-type: x proximity;
 		gap: 2rem;
 
 		> img {
 			border-radius: 0.2rem;
+			scroll-snap-align: center;
 
 			&.pivot {
 				border: solid white 2px;

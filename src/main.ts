@@ -56,6 +56,7 @@ class TrashGallery {
 			this.set_pivot(image)
 			this.add_event_listeners()
 			document.body.appendChild(this.overlay)
+			this.update_preview()
 		}))
 	}
 
@@ -184,6 +185,17 @@ class TrashGallery {
 		this.title.innerText = text
 	}
 
+	update_preview() {
+		let pivot = get_child(this.preview, this.index)
+		let offset = pivot.offsetLeft
+		offset -= (this.preview.clientWidth - pivot.clientWidth) / 2;
+
+		this.preview.scrollTo({
+			left: offset,
+			behavior: "smooth"
+		})
+	}
+
 	set_pivot(pivot: HTMLElement | number): void {
 		if (pivot instanceof HTMLElement)
 			this.index = this.images.indexOf(pivot)
@@ -203,6 +215,7 @@ class TrashGallery {
 		}
 
 		this.update_title()
+		this.update_preview()
 	}
 }
 
