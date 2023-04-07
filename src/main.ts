@@ -212,9 +212,14 @@ class TrashGallery {
 	}
 
 	set_pivot(direction: HTMLElement | number): void {
-		if (direction instanceof HTMLElement)
-			this.index = this.images.indexOf(direction)
-		else
+		if (direction instanceof HTMLElement) {
+			const new_index = this.images.indexOf(direction)
+
+			if (Math.abs(new_index - this.index) === 1)
+				direction = 1
+
+			this.index = new_index
+		} else
 			this.index += direction
 
 		this.overlay.style.setProperty(
