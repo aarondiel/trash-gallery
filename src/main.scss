@@ -38,12 +38,24 @@ main {
 	background-color: rgb(#000000, 0.5);
 	backdrop-filter: blur(0.2rem);
 	display: grid;
+	grid-template:
+		"content" 1fr
+		"title"		fit-content(2rem)
+		"preview" fit-content(5rem) /
+		1fr;
 
 	> * {
 		display: none;
 	}
 
+	> .title {
+		grid-area: title;
+		display: block;
+		text-align: center;
+	}
+
 	> .images {
+		grid-area: content;
 		display: grid;
 		grid-template-areas: "stack";
 		place-items: center;

@@ -25,6 +25,11 @@ function get_child(target: HTMLElement, index: number) {
 	return element
 }
 
+function get_children(element: HTMLElement): HTMLElement[] {
+	return Array.from(element.children)
+		.filter(e => e instanceof HTMLElement) as HTMLElement[]
+}
+
 class TrashGallery {
 	images: HTMLElement[]
 	overlay: HTMLElement
@@ -37,9 +42,7 @@ class TrashGallery {
 
 	constructor(element: HTMLElement | null) {
 		assert_not_null(element)
-
-		this.images = Array.from(element.children)
-			.filter(e => e instanceof HTMLElement) as HTMLElement[]
+		this.images = get_children(element)
 
 		this.overlay = this.clone_template()
 		this.content = this.get_template_class(this.overlay, ".images")
@@ -100,7 +103,7 @@ class TrashGallery {
 
 	touchend = (): void => {
 		if (Math.abs(this.offset_x) > 0.2 * window.innerWidth)
-			this.set_pivot(Math.sign(this.offset_x))
+			this.set_pivot(-Math.sign(this.offset_x))
 
 		this.content.style.setProperty("--offset", "0px")
 		this.start_x = -1
@@ -133,7 +136,7 @@ class TrashGallery {
 		event.currentTarget.removeEventListener("mouseup", this.mouseup)
 
 		if (Math.abs(this.offset_x) > 0.2 * window.innerWidth)
-			this.set_pivot(Math.sign(this.offset_x))
+			this.set_pivot(-Math.sign(this.offset_x))
 
 		this.content.style.setProperty("--offset", "0px")
 		this.start_x = -1
@@ -173,17 +176,19 @@ class TrashGallery {
 	}
 
 	clear_classes(element: HTMLElement) {
-		for (const child of Array.from(element.children)) {
-			assert_instance_of(child, HTMLElement)
-			child.removeAttribute("class")
-		}
+		get_children(element).forEach(child => child.removeAttribute("class"))
+	}
+
+	update_title() {
+		let text = this.images[this.index]?.getAttribute("data-title") ?? ""
+		this.title.innerText = text
 	}
 
 	set_pivot(pivot: HTMLElement | number): void {
 		if (pivot instanceof HTMLElement)
 			this.index = this.images.indexOf(pivot)
 		else
-			this.index -= pivot
+			this.index += pivot
 
 		for (const target of [this.content, this.preview]) {
 			this.clear_classes(target)
@@ -196,6 +201,8 @@ class TrashGallery {
 			previous.classList.add("previous")
 			next.classList.add("next")
 		}
+
+		this.update_title()
 	}
 }
 
