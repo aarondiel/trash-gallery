@@ -41,7 +41,7 @@ main {
 
 	display: grid;
 	grid-template:
-		"content" 17fr
+		"content" 80%
 		"title"		1fr
 		"preview" 2fr /
 		1fr;
@@ -61,13 +61,16 @@ main {
 
 		> img {
 			grid-area: stack;
-			max-height: 80%;
 			width: 100%;
 			padding-inline: 10%;
 			display: none;
-			transition: translate 500ms ease-out;
+			object-fit: contain;
 
-			&.pivot, &.previous, &.next { display: block }
+			&.visible {
+				display: block;
+				transition: translate var(--animation-duration) ease-out;
+			}
+
 			&.pivot { translate: var(--offset, 0px); }
 			&.previous { translate: calc(-100% + var(--offset, 0px)); }
 			&.next { translate: calc(100% + var(--offset, 0px)); }
@@ -81,7 +84,7 @@ main {
 	> .preview {
 		display: flex;
 		overflow-y: scroll;
-			scroll-snap-type: x proximity;
+		scroll-snap-type: x proximity;
 		gap: 2rem;
 
 		> img {

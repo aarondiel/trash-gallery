@@ -39,10 +39,12 @@ class TrashGallery {
 	start_x: number = -1
 	offset_x: number = -1
 	index: number = -1
+	animation_duration: number
 
-	constructor(element: HTMLElement | null) {
+	constructor(element: HTMLElement | null, animation_duration = 400) {
 		assert_not_null(element)
 		this.images = get_children(element)
+		this.animation_duration = animation_duration
 
 		this.overlay = this.clone_template()
 		this.content = this.get_template_class(this.overlay, ".images")
@@ -88,27 +90,38 @@ class TrashGallery {
 	dragstart = (event: DragEvent): void => event.preventDefault()
 
 	touchstart = (event: TouchEvent): void => {
-		if (this.start_x === -1)
-			this.start_x = event.touches.item(0)?.screenX ?? -1
+		assert_instance_of(event.currentTarget, HTMLElement)
+		if (this.start_x !== -1)
+			return
 
 		if (event.target === this.content)
 			this.close_gallery()
+
+		event.currentTarget.addEventListener("touchmove", this.touchmove)
+		event.currentTarget.addEventListener("touchend", this.touchend)
+
+		this.start_x = event.touches.item(0)?.screenX ?? -1
 	}
 
 	touchmove = (event: TouchEvent): void => {
 		event.preventDefault()
 		this.offset_x = (event.touches.item(0)?.screenX ?? 0) - this.start_x
-
 		this.content.style.setProperty("--offset", `${this.offset_x}px`)
 	}
 
-	touchend = (): void => {
+	touchend = (event: TouchEvent): void => {
+		assert_instance_of(event.currentTarget, HTMLElement)
 		if (Math.abs(this.offset_x) > 0.2 * window.innerWidth)
 			this.set_pivot(-Math.sign(this.offset_x))
 
+		event.currentTarget.removeEventListener("touchmove", this.touchmove)
+		event.currentTarget.removeEventListener("touchend", this.touchend)
+
 		this.content.style.setProperty("--offset", "0px")
-		this.start_x = -1
-		this.offset_x = -1
+		window.setTimeout(() => {
+			this.start_x = -1
+			this.offset_x = -1
+		}, this.animation_duration)
 	}
 
 	mousedown = (event: MouseEvent): void => {
@@ -140,8 +153,10 @@ class TrashGallery {
 			this.set_pivot(-Math.sign(this.offset_x))
 
 		this.content.style.setProperty("--offset", "0px")
-		this.start_x = -1
-		this.offset_x = -1
+		window.setTimeout(() => {
+			this.start_x = -1
+			this.offset_x = -1
+		}, this.animation_duration)
 	}
 
 	keyup = (event: KeyboardEvent): void => {
@@ -176,10 +191,6 @@ class TrashGallery {
 		this.overlay.remove()
 	}
 
-	clear_classes(element: HTMLElement) {
-		get_children(element).forEach(child => child.removeAttribute("class"))
-	}
-
 	update_title() {
 		let text = this.images[this.index]?.getAttribute("data-title") ?? ""
 		this.title.innerText = text
@@ -190,29 +201,53 @@ class TrashGallery {
 		let offset = pivot.offsetLeft
 		offset -= (this.preview.clientWidth - pivot.clientWidth) / 2;
 
-		this.preview.scrollTo({
-			left: offset,
-			behavior: "smooth"
-		})
+		this.preview.scrollTo({ left: offset, behavior: "smooth" })
 	}
 
-	set_pivot(pivot: HTMLElement | number): void {
-		if (pivot instanceof HTMLElement)
-			this.index = this.images.indexOf(pivot)
+	set_pivot(direction: HTMLElement | number): void {
+		if (direction instanceof HTMLElement)
+			this.index = this.images.indexOf(direction)
 		else
-			this.index += pivot
+			this.index += direction
+
+		this.overlay.style.setProperty(
+			"--animation-duration",
+			`${this.animation_duration}ms`
+		)
 
 		for (const target of [this.content, this.preview]) {
-			this.clear_classes(target)
+			get_children(target).forEach(e => e.removeAttribute("class"))
 
 			const pivot = get_child(target, this.index)
 			const previous = get_child(target, this.index - 1)
 			const next = get_child(target, this.index + 1)
 
+			pivot.classList.add("visible")
 			pivot.classList.add("pivot")
+
 			previous.classList.add("previous")
+			if (direction < 0)
+				window.setTimeout(
+					() => previous.classList.add("visible"),
+					this.animation_duration
+				)
+			else
+				previous.classList.add("visible")
+
 			next.classList.add("next")
+
+			if (direction > 0)
+				window.setTimeout(
+					() => next.classList.add("visible"),
+					this.animation_duration
+				)
+			else
+				next.classList.add("visible")
 		}
+
+		window.setTimeout(() => {
+			this.overlay.style.setProperty("--animation-duration", "0ms")
+		}, this.animation_duration)
 
 		this.update_title()
 		this.update_preview()
