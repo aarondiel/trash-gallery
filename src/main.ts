@@ -5,7 +5,7 @@ function assert_not_null<T>(value: T): asserts value is Exclude<T, undefined | n
 
 function assert_instance_of<T>(value: unknown, type: { new(): T }): asserts value is T {
 	if (!(value instanceof type))
-		throw new Error("unexpected type")
+		throw new Error(`unexpected type; expected: ${type}, got: ${value}`)
 }
 
 function mod_index(index: number, mod: number) {
@@ -51,8 +51,17 @@ class TrashGallery {
 		this.title = this.get_template_class(this.overlay, ".title")
 		this.preview = this.get_template_class(this.overlay, ".preview")
 
-		this.add_images(this.content)
-		this.add_images(this.preview)
+		this.images
+			.map(image => image.cloneNode(true))
+			.forEach(image => this.content.appendChild(image))
+
+		this.images
+			.map(image => {
+				const clone = image.cloneNode(true)
+				clone.addEventListener("click", () => this.set_pivot(image))
+				return clone
+			})
+			.forEach(image => this.preview.appendChild(image))
 
 		this.images.forEach(image => image.addEventListener("click", () => {
 			this.set_pivot(image)
@@ -79,12 +88,6 @@ class TrashGallery {
 		div.appendChild(node)
 
 		return div
-	}
-
-	add_images(target: HTMLElement): void {
-		this.images
-			.map(image => image.cloneNode(true))
-			.forEach(image => target.appendChild(image))
 	}
 
 	dragstart = (event: DragEvent): void => event.preventDefault()
@@ -118,10 +121,10 @@ class TrashGallery {
 		event.currentTarget.removeEventListener("touchend", this.touchend)
 
 		this.content.style.setProperty("--offset", "0px")
-		window.setTimeout(() => {
+		this.after_animation(() => {
 			this.start_x = -1
 			this.offset_x = -1
-		}, this.animation_duration)
+		})
 	}
 
 	mousedown = (event: MouseEvent): void => {
@@ -153,10 +156,10 @@ class TrashGallery {
 			this.set_pivot(-Math.sign(this.offset_x))
 
 		this.content.style.setProperty("--offset", "0px")
-		window.setTimeout(() => {
+		this.after_animation(() => {
 			this.start_x = -1
 			this.offset_x = -1
-		}, this.animation_duration)
+		})
 	}
 
 	keyup = (event: KeyboardEvent): void => {
@@ -204,6 +207,10 @@ class TrashGallery {
 		this.preview.scrollTo({ left: offset, behavior: "smooth" })
 	}
 
+	after_animation(callback: () => void): void {
+		window.setTimeout(callback, this.animation_duration)
+	}
+
 	set_pivot(direction: HTMLElement | number): void {
 		if (direction instanceof HTMLElement)
 			this.index = this.images.indexOf(direction)
@@ -224,30 +231,23 @@ class TrashGallery {
 
 			pivot.classList.add("visible")
 			pivot.classList.add("pivot")
-
 			previous.classList.add("previous")
-			if (direction < 0)
-				window.setTimeout(
-					() => previous.classList.add("visible"),
-					this.animation_duration
-				)
+			next.classList.add("next")
+
+			if (direction instanceof HTMLElement || direction < 0) 
+				this.after_animation(() => previous.classList.add("visible"))
 			else
 				previous.classList.add("visible")
 
-			next.classList.add("next")
-
-			if (direction > 0)
-				window.setTimeout(
-					() => next.classList.add("visible"),
-					this.animation_duration
-				)
+			if (direction instanceof HTMLElement || direction > 0)
+				this.after_animation(() => next.classList.add("visible"))
 			else
 				next.classList.add("visible")
 		}
 
-		window.setTimeout(() => {
+		this.after_animation(() => 
 			this.overlay.style.setProperty("--animation-duration", "0ms")
-		}, this.animation_duration)
+		)
 
 		this.update_title()
 		this.update_preview()
