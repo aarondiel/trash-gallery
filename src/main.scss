@@ -54,11 +54,12 @@ main {
 			width: 100%;
 			padding-inline: 10%;
 			display: none;
+			transition: translate 500ms ease-out;
 
-			&.pivot, &.pivot + *, &:last-of-type { display: block; }
-			&.pivot { translate: var(--offset, 0); }
-			&.pivot + * { translate: calc(100% + var(--offset, 0)); }
-			&:last-of-type { translate: calc(-100% + var(--offset, 0)); }
+			&.pivot, &.previous, &.next { display: block }
+			&.pivot { translate: var(--offset, 0px); }
+			&.previous { translate: calc(-100% + var(--offset, 0px)); }
+			&.next { translate: calc(100% + var(--offset, 0px)); }
 		}
 	}
 }

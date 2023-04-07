@@ -8,161 +8,197 @@ function assert_instance_of<T>(value: unknown, type: { new(): T }): asserts valu
 		throw new Error("unexpected type")
 }
 
-function gallery_is_open(): boolean {
-	return document.querySelector(".trash-gallery-overlay") !== null
+function mod_index(index: number, mod: number) {
+	index %= mod
+	if (index < 0)
+		index = mod + index
+
+	return index
 }
 
-function clone_template(): HTMLElement | undefined {
-	const template = document.getElementById("trash-gallery-overlay")
-	assert_instance_of(template, HTMLTemplateElement)
+function get_child(target: HTMLElement, index: number) {
+	const element = target.children.item(
+		mod_index(index, target.children.length)
+	)
 
-	const node = template.content.cloneNode(true)
-	const div = document.createElement("div")
-
-	div.classList.add("trash-gallery-overlay")
-	div.append(node)
-
-	return div
+	assert_instance_of(element, HTMLElement)
+	return element
 }
 
-function add_event_listeners(overlay: HTMLElement): void {
-	const content = overlay.querySelector(".images")
-	assert_instance_of(content, HTMLElement)
+class TrashGallery {
+	images: HTMLElement[]
+	overlay: HTMLElement
+	content: HTMLElement
+	title: HTMLElement
+	preview: HTMLElement
+	start_x: number = -1
+	offset_x: number = -1
+	index: number = -1
 
-	let start_x = -1
-	let offset_x = -1
+	constructor(element: HTMLElement | null) {
+		assert_not_null(element)
 
-	content.addEventListener("dragstart", (event) => event.preventDefault())
+		this.images = Array.from(element.children)
+			.filter(e => e instanceof HTMLElement) as HTMLElement[]
 
-	content.addEventListener("touchstart", (event) => {
-		if (start_x === -1)
-			start_x = event.touches.item(0)?.screenX ?? -1
-	})
+		this.overlay = this.clone_template()
+		this.content = this.get_template_class(this.overlay, ".images")
+		this.title = this.get_template_class(this.overlay, ".title")
+		this.preview = this.get_template_class(this.overlay, ".preview")
 
-	content.addEventListener("touchmove", (event) => {
+		this.add_images(this.content)
+		this.add_images(this.preview)
+
+		this.images.forEach(image => image.addEventListener("click", () => {
+			this.set_pivot(image)
+			this.add_event_listeners()
+			document.body.appendChild(this.overlay)
+		}))
+	}
+
+	get_template_class(overlay: HTMLElement, classname: string): HTMLElement {
+		const element = overlay.querySelector(classname)
+		assert_instance_of(element, HTMLElement)
+		return element
+	}
+
+	clone_template(): HTMLElement {
+		const template = document.getElementById("trash-gallery-overlay")
+		assert_instance_of(template, HTMLTemplateElement)
+
+		const node = template.content.cloneNode(true)
+		const div = document.createElement("div")
+
+		div.classList.add("trash-gallery-overlay")
+		div.appendChild(node)
+
+		return div
+	}
+
+	add_images(target: HTMLElement): void {
+		this.images
+			.map(image => image.cloneNode(true))
+			.forEach(image => target.appendChild(image))
+	}
+
+	dragstart = (event: DragEvent): void => event.preventDefault()
+
+	touchstart = (event: TouchEvent): void => {
+		if (this.start_x === -1)
+			this.start_x = event.touches.item(0)?.screenX ?? -1
+
+		if (event.target === this.content)
+			this.close_gallery()
+	}
+
+	touchmove = (event: TouchEvent): void => {
 		event.preventDefault()
-		offset_x = (event.touches.item(0)?.screenX ?? 0) - start_x
+		this.offset_x = (event.touches.item(0)?.screenX ?? 0) - this.start_x
 
-		content.style.setProperty("--offset", `${offset_x}px`)
-	})
-
-	content.addEventListener("touchend", () => {
-		if (Math.abs(offset_x) > 0.2 * window.innerWidth)
-			move_pivot(overlay, Math.sign(offset_x))
-
-		content.style.setProperty("--offset", "0px")
-		start_x = -1
-	})
-}
-
-function add_images_to_overlay(
-	overlay: HTMLElement,
-	images: HTMLImageElement[],
-	pivot: HTMLImageElement
-): void {
-	const content = overlay.querySelector(".images")
-	const preview_bar = overlay.querySelector(".preview")
-
-	assert_instance_of(content, HTMLElement)
-	assert_instance_of(preview_bar, HTMLElement)
-
-	let pivot_hit = false
-	for (const image of images) {
-		if (image === pivot)
-			pivot_hit = true
-		else if (!pivot_hit)
-			continue
-		
-		const a: unknown = content.appendChild(image.cloneNode(true))
-		const b: unknown = preview_bar.appendChild(image.cloneNode(true))
-
-		assert_instance_of(a, HTMLElement)
-		a.classList.toggle("pivot", image === pivot)
-
-		assert_instance_of(b, HTMLElement)
-		b.classList.toggle("pivot", image === pivot)
+		this.content.style.setProperty("--offset", `${this.offset_x}px`)
 	}
 
-	for (const image of images) {
-		if (image === pivot)
-			break
+	touchend = (): void => {
+		if (Math.abs(this.offset_x) > 0.2 * window.innerWidth)
+			this.set_pivot(Math.sign(this.offset_x))
 
-		content.appendChild(image.cloneNode(true))
-		preview_bar.appendChild(image.cloneNode(true))
+		this.content.style.setProperty("--offset", "0px")
+		this.start_x = -1
+		this.offset_x = -1
 	}
-}
 
-function rotate_images(
-	overlay: HTMLElement,
-	n: number
-): void {
-	if (n === 0)
-		return
+	mousedown = (event: MouseEvent): void => {
+		assert_instance_of(event.currentTarget, HTMLElement)
+		if (this.start_x !== -1)
+			return
 
-	const container = overlay.querySelector(".images")
-	const fragment = document.createDocumentFragment()
-	assert_not_null(container)
+		if (event.target === this.content)
+			this.close_gallery()
 
-	for (const start of [container.children.length - n, 0]) {
-		let image = container.children.item(start)
-		while (image != null) {
-			fragment.appendChild(image).classList.remove("pivot")
-			image = container.children.item(start)
+		event.currentTarget.addEventListener("mousemove", this.mousemove)
+		event.currentTarget.addEventListener("mouseup", this.mouseup)
+
+		this.start_x = event.screenX
+	}
+
+	mousemove = (event: MouseEvent): void => {
+		this.offset_x = event.screenX - this.start_x
+		this.content.style.setProperty("--offset", `${this.offset_x}px`)
+	}
+
+	mouseup = (event: MouseEvent): void => {
+		assert_instance_of(event.currentTarget, HTMLElement)
+
+		event.currentTarget.removeEventListener("mousemove", this.mousemove)
+		event.currentTarget.removeEventListener("mouseup", this.mouseup)
+
+		if (Math.abs(this.offset_x) > 0.2 * window.innerWidth)
+			this.set_pivot(Math.sign(this.offset_x))
+
+		this.content.style.setProperty("--offset", "0px")
+		this.start_x = -1
+		this.offset_x = -1
+	}
+
+	keyup = (event: KeyboardEvent): void => {
+		if (event.key === "ArrowLeft")
+			this.set_pivot(-1)
+		else if (event.key === "ArrowRight")
+			this.set_pivot(1)
+		else if (event.key === "Escape")
+			this.close_gallery()
+	}
+
+	remove_event_listeners(): void {
+		this.content.removeEventListener("dragstart", this.dragstart)
+		this.content.removeEventListener("touchstart", this.touchstart)
+		this.content.removeEventListener("touchmove", this.touchmove)
+		this.content.removeEventListener("touchend", this.touchend)
+		this.content.removeEventListener("mousedown", this.mousedown)
+		document.removeEventListener("keyup", this.keyup)
+	}
+
+	add_event_listeners(): void {
+		this.content.addEventListener("dragstart", this.dragstart)
+		this.content.addEventListener("touchstart", this.touchstart)
+		this.content.addEventListener("touchmove", this.touchmove)
+		this.content.addEventListener("touchend", this.touchend)
+		this.content.addEventListener("mousedown", this.mousedown)
+		document.addEventListener("keyup", this.keyup)
+	}
+
+	close_gallery() {
+		this.remove_event_listeners()
+		this.overlay.remove()
+	}
+
+	clear_classes(element: HTMLElement) {
+		for (const child of Array.from(element.children)) {
+			assert_instance_of(child, HTMLElement)
+			child.removeAttribute("class")
 		}
 	}
 
-	fragment.children.item(0)?.classList.add("pivot")
-	container.replaceChildren(fragment)
+	set_pivot(pivot: HTMLElement | number): void {
+		if (pivot instanceof HTMLElement)
+			this.index = this.images.indexOf(pivot)
+		else
+			this.index -= pivot
+
+		for (const target of [this.content, this.preview]) {
+			this.clear_classes(target)
+
+			const pivot = get_child(target, this.index)
+			const previous = get_child(target, this.index - 1)
+			const next = get_child(target, this.index + 1)
+
+			pivot.classList.add("pivot")
+			previous.classList.add("previous")
+			next.classList.add("next")
+		}
+	}
 }
 
-function move_pivot(overlay: HTMLElement, direction: number): void {
-	const content = overlay.querySelector(".images")
-	assert_instance_of(content, HTMLElement)
-
-	const images = Array.from(content.children)
-
-	if (direction < 0)
-		rotate_images(overlay, images.length + direction)
-	else
-		rotate_images(overlay, direction)
-}
-
-function open_gallery(
-	pivot: HTMLImageElement,
-	images: HTMLImageElement[]
-): void {
-	if (gallery_is_open())
-		return
-
-	const overlay = clone_template()
-	assert_not_null(overlay)
-
-	// todo: special cases 1 or 2 images
-
-	add_images_to_overlay(overlay, images, pivot)
-	add_event_listeners(overlay)
-
-	document.body.appendChild(overlay)
-}
-
-function add_click_event(
-	pivot: HTMLImageElement,
-	images: HTMLImageElement[]
-): void {
-	const callback = () => open_gallery(pivot, images)
-	pivot.addEventListener("click", callback)
-}
-
-function initialize_trash_gallery(): void {
-	const trash_gallery = document.getElementById("trash-gallery")
-	assert_not_null(trash_gallery)
-
-	const children = Array.from(trash_gallery.children)
-		.filter(element => element instanceof HTMLImageElement) as HTMLImageElement[]
-
-	children.forEach(pivot => add_click_event(pivot, children))
-}
-
-initialize_trash_gallery()
+new TrashGallery(document.getElementById("trash-gallery"))
 
 export {}
