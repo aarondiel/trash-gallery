@@ -32,78 +32,7 @@ main {
 	padding-block: 2rem;
 }
 
-.trash-gallery-overlay {
-	position: fixed;
-	inset: 0;
-	background-color: rgb(#000000, 0.5);
-	backdrop-filter: blur(0.2rem);
-	padding-block: 2rem;
-
-	display: grid;
-	grid-template:
-		"content" 80%
-		"title"		1fr
-		"preview" 2fr /
-		1fr;
-
-	> .title {
-		grid-area: title;
-		text-align: center;
-		display: grid;
-		place-items: center;
-	}
-
-	> .images {
-		grid-area: content;
-		display: grid;
-		grid-template-areas: "stack";
-		place-items: center;
-
-		> img {
-			grid-area: stack;
-			width: 100%;
-			padding-inline: 10%;
-			display: none;
-			object-fit: contain;
-
-			&.visible {
-				display: block;
-				transition: translate var(--animation-duration) ease-out;
-			}
-
-			&.pivot { translate: var(--offset, 0px); }
-			&.previous { translate: calc(-100% + var(--offset, 0px)); }
-			&.next { translate: calc(100% + var(--offset, 0px)); }
-		}
-	}
-
-	> .controls { display: none; }
-
-	> .preview {
-		display: flex;
-		overflow-y: scroll;
-		scroll-snap-type: x proximity;
-		gap: 2rem;
-
-		scrollbar-color: white transparent;
-		&::-webkit-scrollbar { height: 0.2rem; }
-		&::-webkit-scrollbar-thumb {
-			background: white;
-			border-radius: 0.2rem;
-		}
-
-		> img {
-			border-radius: 0.2rem;
-			scroll-snap-align: center;
-
-			&.pivot {
-				border: solid white 2px;
-			}
-		}
-	}
-}
-
-#trash-gallery {
+#gallery {
 	max-width: 80rem;
 	margin-inline: auto;
 

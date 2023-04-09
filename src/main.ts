@@ -1,3 +1,5 @@
+import "./gallery.scss"
+
 function assert_not_null<T>(value: T): asserts value is Exclude<T, undefined | null> {
 	if (value === undefined || value === null)
 		throw new Error("unexpected null type")
@@ -25,9 +27,12 @@ function get_child(target: HTMLElement, index: number) {
 	return element
 }
 
+function filter_html_elements(elements: unknown[]): HTMLElement[] {
+	return elements.filter(e => e instanceof HTMLElement) as HTMLElement[]
+}
+
 function get_children(element: HTMLElement): HTMLElement[] {
-	return Array.from(element.children)
-		.filter(e => e instanceof HTMLElement) as HTMLElement[]
+	return filter_html_elements(Array.from(element.children))
 }
 
 class TrashGallery {
@@ -78,16 +83,14 @@ class TrashGallery {
 	}
 
 	clone_template(): HTMLElement {
-		const template = document.getElementById("trash-gallery-overlay")
-		assert_instance_of(template, HTMLTemplateElement)
+		const overlay = document.createElement("div")
+		overlay.classList.add("gallery-overlay")
 
-		const node = template.content.cloneNode(true)
-		const div = document.createElement("div")
+		overlay.appendChild(document.createElement("div")).classList.add("images")
+		overlay.appendChild(document.createElement("p")).classList.add("title")
+		overlay.appendChild(document.createElement("div")).classList.add("preview")
 
-		div.classList.add("trash-gallery-overlay")
-		div.appendChild(node)
-
-		return div
+		return overlay
 	}
 
 	dragstart = (event: DragEvent): void => event.preventDefault()
@@ -259,6 +262,7 @@ class TrashGallery {
 	}
 }
 
-new TrashGallery(document.getElementById("trash-gallery"))
+filter_html_elements(Array.from(document.querySelectorAll("#gallery")))
+	.forEach(e => new TrashGallery(e))
 
-export {}
+export default TrashGallery
