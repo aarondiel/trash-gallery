@@ -1,9 +1,12 @@
+$overlay-block-margin: 2rem;
+
 .gallery-overlay {
 	position: fixed;
 	inset: 0;
 	background-color: rgb(#000000, 0.5);
 	backdrop-filter: blur(0.2rem);
-	padding-block: 2rem;
+	padding-block: $overlay-block-margin;
+		gap: 1rem;
 
 	display: grid;
 	grid-template:
@@ -17,6 +20,12 @@
 		text-align: center;
 		display: grid;
 		place-items: center;
+		background-color: #00000088;
+		font-size: 1.5em;
+
+		&:empty {
+			display: none;
+		}
 	}
 
 	> .images {
@@ -45,6 +54,7 @@
 	}
 
 	> .preview {
+		grid-area: preview;
 		display: none;
 		overflow-y: scroll;
 		scroll-snap-type: x proximity;
@@ -67,5 +77,32 @@
 		}
 
 		@media (min-width: 992px) { display: flex; }
+	}
+
+	> .controls {
+		z-index: 1;
+		font-size: 2rem;
+		font-weight: 700;
+		padding: 1rem;
+		cursor: pointer;
+		background-color: transparent;
+		border-color: transparent;
+
+		&.previous {
+			grid-area: content;
+			place-self: center start;
+		}
+
+		&.next {
+			grid-area: content;
+			place-self: center end;
+			padding: 1rem;
+		}
+
+		&.close {
+			grid-area: content;
+			margin-top: -$overlay-block-margin;
+			place-self: start end;
+		}
 	}
 }

@@ -1,4 +1,5 @@
 import "./gallery.scss"
+import "./main.scss"
 
 function assert_not_null<T>(value: T): asserts value is Exclude<T, undefined | null> {
 	if (value === undefined || value === null)
@@ -35,6 +36,13 @@ function get_children(element: HTMLElement): HTMLElement[] {
 	return filter_html_elements(Array.from(element.children))
 }
 
+type GalleryElements = {
+	overlay: HTMLElement,
+	content: HTMLElement,
+	title: HTMLElement,
+	preview: HTMLElement,
+}
+
 class TrashGallery {
 	images: HTMLElement[]
 	overlay: HTMLElement
@@ -51,10 +59,11 @@ class TrashGallery {
 		this.images = get_children(element)
 		this.animation_duration = animation_duration
 
-		this.overlay = this.clone_template()
-		this.content = this.get_template_class(this.overlay, ".images")
-		this.title = this.get_template_class(this.overlay, ".title")
-		this.preview = this.get_template_class(this.overlay, ".preview")
+		const gallery_elements = this.clone_template()
+		this.overlay = gallery_elements.overlay
+		this.content = gallery_elements.content
+		this.title = gallery_elements.title
+		this.preview = gallery_elements.preview
 
 		this.images
 			.map(image => image.cloneNode(true))
@@ -76,21 +85,43 @@ class TrashGallery {
 		}))
 	}
 
-	get_template_class(overlay: HTMLElement, classname: string): HTMLElement {
-		const element = overlay.querySelector(classname)
-		assert_instance_of(element, HTMLElement)
-		return element
-	}
-
-	clone_template(): HTMLElement {
+	clone_template(): GalleryElements {
 		const overlay = document.createElement("div")
 		overlay.classList.add("gallery-overlay")
 
-		overlay.appendChild(document.createElement("div")).classList.add("images")
-		overlay.appendChild(document.createElement("p")).classList.add("title")
-		overlay.appendChild(document.createElement("div")).classList.add("preview")
+		const content = overlay.appendChild(document.createElement("div"))
+		content.classList.add("images")
 
-		return overlay
+		const title = overlay.appendChild(document.createElement("p"))
+		title.classList.add("title")
+
+		const preview = overlay.appendChild(document.createElement("div"))
+		preview.classList.add("preview")
+
+		const close = overlay.appendChild(document.createElement("button"))
+		close.classList.add("controls")
+		close.classList.add("close")
+		close.onclick = () => this.close_gallery()
+		close.innerText = "x"
+
+		const previous = overlay.appendChild(document.createElement("button"))
+		previous.classList.add("controls")
+		previous.classList.add("previous")
+		previous.onclick = () => this.set_pivot(-1)
+		previous.innerText = "<"
+
+		const next = overlay.appendChild(document.createElement("button"))
+		next.classList.add("controls")
+		next.classList.add("next")
+		next.onclick = () => this.set_pivot(1)
+		next.innerText = ">"
+
+		return {
+			overlay,
+			content,
+			title,
+			preview
+		}
 	}
 
 	dragstart = (event: DragEvent): void => event.preventDefault()
