@@ -1,34 +1,45 @@
+import "./trash-gallery-modal"
 import { LitElement, css, html } from "lit"
-import { customElement, property, queryAssignedElements, state } from "lit/decorators.js"
+import { customElement, query, queryAssignedElements, state } from "lit/decorators.js"
+import { TrashGalleryElement, TrashGalleryModal } from "./trash-gallery-modal";
 
 @customElement("trash-gallery")
 export class TrashGallery extends LitElement {
 	@queryAssignedElements({ selector: "img" })
 	private images!: HTMLImageElement[];
 
+	@query("trash-gallery-modal")
+	private modal!: TrashGalleryModal;
+
 	@state()
-	private sources: string[] = [ ]
+	private elements: TrashGalleryElement[] = []
 
   static styles = css`
-    :host {
-    }
+    :host {}
 
     ::slotted(img) {
+			cursor: pointer;
 			display: block;
-			min-width: 0;
 			max-width: 100%;
     }
   `
 
   render() {
     return html`
-      <slot @slotchange=${this.cook_sauces}></slot>
-			${this.sources.map(source => html`<p>${source}</p>`)}
+			<trash-gallery-modal .elements=${this.elements}></trash-gallery-modal>
+      <slot @slotchange=${this.update_elements}></slot>
     `
   }
 
-	cook_sauces() {
-		this.sources = this.images.map(img => img.src)
+	update_elements() {
+		this.elements = this.images.map(img => new TrashGalleryElement(img))
+		let i = 0
+
+		this.images.forEach(image => {
+			image.setAttribute("data-index", (i++).toString())
+			image.onclick = () =>
+				this.modal.open(parseInt(image.getAttribute("data-index") ?? "0"))
+			})
 	}
 }
 
