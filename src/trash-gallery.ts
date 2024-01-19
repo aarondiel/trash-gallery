@@ -8,6 +8,9 @@ export class TrashGallery extends LitElement {
 	@queryAssignedElements({ selector: "img" })
 	private images!: HTMLImageElement[];
 
+	@queryAssignedElements({ selector: "figure" })
+	private figures!: HTMLElement[]
+
 	@query("trash-gallery-modal")
 	private modal!: TrashGalleryModal;
 
@@ -17,10 +20,8 @@ export class TrashGallery extends LitElement {
   static styles = css`
     :host {}
 
-    ::slotted(img) {
+    ::slotted(*) {
 			cursor: pointer;
-			display: block;
-			max-width: 100%;
     }
   `
 
@@ -32,10 +33,31 @@ export class TrashGallery extends LitElement {
   }
 
 	update_elements() {
-		this.elements = this.images.map(img => new TrashGalleryElement(img))
-		let i = 0
+		const figure_images = this.figures.flatMap(figure =>
+			Array.from(figure.querySelectorAll("img"))
+		)
 
-		this.images.forEach(image => {
+		const images = this.images.filter(img => !figure_images.some(
+			figure_image => figure_image === img)
+		)
+
+		this.elements = [
+			...images.map(img => new TrashGalleryElement(img)),
+			...this.figures.flatMap(figure => {
+				const img = figure.querySelector("img")
+				const caption = figure.querySelector("figcaption")
+
+				if (!(img instanceof HTMLImageElement))
+					return []
+
+				return [ new TrashGalleryElement(img, caption?.innerHTML) ]
+			})
+		]
+
+		let i = 0
+		let onclick_elements = [...this.images, ...this.figures]
+
+		onclick_elements.forEach(image => {
 			image.setAttribute("data-index", (i++).toString())
 			image.onclick = () =>
 				this.modal.open(parseInt(image.getAttribute("data-index") ?? "0"))

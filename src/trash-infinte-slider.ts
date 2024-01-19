@@ -30,6 +30,7 @@ export class TrashInfiniteSlider extends LitElement {
   static styles = css`
 		div {
 			display: grid;
+			place-items: center;
 			gap: 2rem;
 			grid-auto-flow: column;
 			grid-auto-columns: 100%;

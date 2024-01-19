@@ -5,7 +5,7 @@ import { TrashInfiniteSlider } from "./trash-infinte-slider"
 
 export class TrashGalleryElement {
 	public html: HTMLImageElement
-	public caption?: HTMLElement
+	public caption?: string
 
 	constructor(
 		html: TrashGalleryElement["html"],
