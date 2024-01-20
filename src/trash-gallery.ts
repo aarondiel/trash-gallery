@@ -40,8 +40,6 @@ export class TrashGallery extends LitElement {
 			const image = element.querySelector(":not(figcaption)")
 			const caption = element.querySelector("figcaption")
 
-			console.log(image, caption)
-
 			if (!(image instanceof HTMLElement) || caption === null)
 				return []
 

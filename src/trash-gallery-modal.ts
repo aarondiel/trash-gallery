@@ -2,6 +2,7 @@ import "./trash-infinte-slider"
 import { LitElement, css, html } from "lit"
 import { customElement, property, query, state } from "lit/decorators.js"
 import { TrashInfiniteSlider } from "./trash-infinte-slider"
+import { unsafeHTML } from "lit/directives/unsafe-html.js"
 
 export class TrashGalleryElement {
 	public html: HTMLElement
@@ -105,7 +106,7 @@ export class TrashGalleryModal extends LitElement {
 					</trash-infinite-slider>
 				</div>
 
-				<div class="caption">${this.current_caption}</div>
+				<div class="caption">${unsafeHTML(this.current_caption)}</div>
 
 				<div>
 					previewer here
