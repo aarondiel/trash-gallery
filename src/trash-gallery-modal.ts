@@ -1,10 +1,10 @@
 import "./trash-infinte-slider"
 import { LitElement, css, html } from "lit"
-import { customElement, property, query } from "lit/decorators.js"
+import { customElement, property, query, state } from "lit/decorators.js"
 import { TrashInfiniteSlider } from "./trash-infinte-slider"
 
 export class TrashGalleryElement {
-	public html: HTMLImageElement
+	public html: HTMLElement
 	public caption?: string
 
 	constructor(
@@ -19,13 +19,16 @@ export class TrashGalleryElement {
 @customElement("trash-gallery-modal")
 export class TrashGalleryModal extends LitElement {
 	@property()
-	elements: TrashGalleryElement[] = []
+	private elements: TrashGalleryElement[] = []
 
 	@query("dialog")
-	dialog!: HTMLDialogElement
+	private dialog!: HTMLDialogElement
 
 	@query("trash-infinite-slider")
-	slider!: TrashInfiniteSlider
+	private slider!: TrashInfiniteSlider
+
+	@state()
+	private current_caption = ""
 
   static styles = css`
 		:host {
@@ -78,6 +81,11 @@ export class TrashGalleryModal extends LitElement {
 			> trash-infinite-slider { z-index: -1; }
 		}
 
+		.caption {
+			text-align: center;
+			font-size: 2em;
+		}
+
 		img {
 			display: block;
 			max-width: 100%;
@@ -92,14 +100,12 @@ export class TrashGalleryModal extends LitElement {
 					<button @click=${this.left} class="left-button">&lt;</button>
 					<button @click=${this.right} class="right-button">&gt;</button>
 
-					<trash-infinite-slider>
+					<trash-infinite-slider @index-change=${this.update_index}>
 						${this.elements.map(element => element.html.cloneNode(true))}
 					</trash-infinite-slider>
 				</div>
 
-				<div>
-					caption here
-				</div>
+				<div class="caption">${this.current_caption}</div>
 
 				<div>
 					previewer here
@@ -107,6 +113,10 @@ export class TrashGalleryModal extends LitElement {
 			</dialog>
 		`
   }
+
+	update_index(event: CustomEvent<number>) {
+		this.current_caption = this.elements[event.detail]?.caption ?? ""
+	}
 
 	open(index: number) {
 		this.dialog.show()

@@ -10,16 +10,16 @@ function mod(index: number, mod: number) {
 @customElement("trash-infinite-slider")
 export class TrashInfiniteSlider extends LitElement {
 	@queryAssignedElements({ selector: "img" })
-	private images!: HTMLImageElement[]
+	private images!: HTMLElement[]
 
 	@query("div")
 	private track!: HTMLDivElement
 
 	@state()
-	private left_duplicates: HTMLImageElement[] = []
+	private left_duplicates: HTMLElement[] = []
 
 	@state()
-	private right_duplicates: HTMLImageElement[] = []
+	private right_duplicates: HTMLElement[] = []
 
 	@property()
 	public smooth_scrolling: boolean = true
@@ -79,10 +79,10 @@ export class TrashInfiniteSlider extends LitElement {
 			throw Error("todo: handle single image slider")
 
 		this.left_duplicates = this.images.slice(this.images.length - 2, this.images.length)
-			.map(img => img.cloneNode(true) as HTMLImageElement)
+			.map(img => img.cloneNode(true) as HTMLElement)
 
 		this.right_duplicates = this.images.slice(0, 2)
-			.map(img => img.cloneNode(true) as HTMLImageElement)
+			.map(img => img.cloneNode(true) as HTMLElement)
 
 		let i = -2
 	 	this.left_duplicates.forEach(img => img.setAttribute("data-index", (i++).toString()))
@@ -107,14 +107,16 @@ export class TrashInfiniteSlider extends LitElement {
 	set_index(index: number, disable_smooth_scrolling: boolean = false) {
 		this.index = index
 
-		if (0 <= this.index && this.index < this.images.length)
+		if (0 <= this.index && this.index < this.images.length) {
 			this.renderRoot.querySelector("slot")
 				?.assignedElements()
 				.filter(node => node.getAttribute("data-index") === this.index.toString())
 				.forEach(node => node.scrollIntoView({
 					behavior: this.smooth_scrolling && !disable_smooth_scrolling ? "smooth" : "instant"
 				}))
-		else
+
+			this.dispatchEvent(new CustomEvent("index-change", { detail: this.index }))
+		} else
 			this.track.querySelector(`img[data-index="${index}"]`)
 				?.scrollIntoView({
 					behavior: this.smooth_scrolling && !disable_smooth_scrolling ? "smooth" : "instant"

@@ -5,14 +5,11 @@ import { TrashGalleryElement, TrashGalleryModal } from "./trash-gallery-modal";
 
 @customElement("trash-gallery")
 export class TrashGallery extends LitElement {
-	@queryAssignedElements({ selector: "img" })
-	private images!: HTMLImageElement[];
-
-	@queryAssignedElements({ selector: "figure" })
-	private figures!: HTMLElement[]
+	@queryAssignedElements()
+	private assigned_elements!: HTMLElement[]
 
 	@query("trash-gallery-modal")
-	private modal!: TrashGalleryModal;
+	private modal!: TrashGalleryModal
 
 	@state()
 	private elements: TrashGalleryElement[] = []
@@ -33,35 +30,31 @@ export class TrashGallery extends LitElement {
   }
 
 	update_elements() {
-		const figure_images = this.figures.flatMap(figure =>
-			Array.from(figure.querySelectorAll("img"))
-		)
+		this.elements = this.assigned_elements.flatMap(element => {
+			if (element.matches(".trash-gallery-ignore"))
+				return []
 
-		const images = this.images.filter(img => !figure_images.some(
-			figure_image => figure_image === img)
-		)
+			if (element instanceof HTMLImageElement)
+				return [ new TrashGalleryElement(element) ]
 
-		this.elements = [
-			...images.map(img => new TrashGalleryElement(img)),
-			...this.figures.flatMap(figure => {
-				const img = figure.querySelector("img")
-				const caption = figure.querySelector("figcaption")
+			const image = element.querySelector(":not(figcaption)")
+			const caption = element.querySelector("figcaption")
 
-				if (!(img instanceof HTMLImageElement))
-					return []
+			console.log(image, caption)
 
-				return [ new TrashGalleryElement(img, caption?.innerHTML) ]
-			})
-		]
+			if (!(image instanceof HTMLElement) || caption === null)
+				return []
+
+			return [ new TrashGalleryElement(image, caption.innerHTML) ]
+		})
 
 		let i = 0
-		let onclick_elements = [...this.images, ...this.figures]
-
-		onclick_elements.forEach(image => {
-			image.setAttribute("data-index", (i++).toString())
-			image.onclick = () =>
-				this.modal.open(parseInt(image.getAttribute("data-index") ?? "0"))
-			})
+		this.elements.forEach(element => {
+			element.html.setAttribute("data-index", (i++).toString())
+			element.html.onclick = () =>
+				this.modal.open(parseInt(element.html.getAttribute("data-index") ?? "0")
+			)
+		})
 	}
 }
 
