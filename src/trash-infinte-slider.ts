@@ -7,9 +7,6 @@ export class TrashInfiniteSlider extends LitElement {
 	@queryAssignedElements()
 	private images!: HTMLElement[]
 
-	@query("div")
-	private track!: HTMLDivElement
-
 	@state()
 	private left_duplicates: HTMLElement[] = []
 
@@ -94,7 +91,7 @@ export class TrashInfiniteSlider extends LitElement {
 	 	this.right_duplicates.forEach(img => img.setAttribute("data-index", (i++).toString()))
 
 		this.intersection_observer = new IntersectionObserver(this.update_index, {
-			root: this.track,
+			root: this,
 			threshold: 1.0
 		})
 
@@ -120,7 +117,7 @@ export class TrashInfiniteSlider extends LitElement {
 
 			this.dispatchEvent(new CustomEvent("index-change", { detail: this.index }))
 		} else
-			this.track.querySelector(`img[data-index="${index}"]`)
+			this.renderRoot.querySelector(`img[data-index="${index}"]`)
 				?.scrollIntoView({
 					behavior: this.smooth_scrolling && !disable_smooth_scrolling ? "smooth" : "instant"
 				})
