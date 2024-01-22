@@ -117,7 +117,7 @@ export class TrashGalleryModal extends LitElement {
 
 				<div class="caption">${unsafeHTML(this.current_caption)}</div>
 
-				<trash-gallery-previewer>
+				<trash-gallery-previewer @set-index=${this.change_index}>
 					${this.elements.map(element => element.html.cloneNode(true))}
 				</trash-gallery-previewer>
 			</dialog>
@@ -136,6 +136,10 @@ export class TrashGalleryModal extends LitElement {
 
 	close() {
 		this.dialog.close()
+	}
+
+	change_index(ev: CustomEvent<number>) {
+		this.slider.set_index(ev.detail)
 	}
 
 	left() {

@@ -31,7 +31,20 @@ export class TrashGalleryPreviewer extends LitElement {
 	`
 
   render() {
-		return html`<slot></slot>`
+		return html`<slot @slotchange=${this.update_onclick}></slot>`
+	}
+
+	update_onclick() {
+		let i = 0
+		this.images
+			.map(img => ({ id: i++, html: img }))
+			.forEach(({id, html}) => {
+				html.style.cursor = "pointer"
+
+				html.onclick = () => this.dispatchEvent(
+					new CustomEvent("set-index", { detail: id })
+				)
+			})
 	}
 
 	set_index(index: number) {
