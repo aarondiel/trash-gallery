@@ -1,15 +1,10 @@
 import { LitElement, css, html } from "lit"
 import { customElement, property, query, queryAssignedElements, state } from "lit/decorators.js"
-import { styleMap } from "lit/directives/style-map.js"
-
-function mod(index: number, mod: number) {
-	index %= mod
-	return (index < 0) ? mod + index : index
-}
+import { mod } from "./utils"
 
 @customElement("trash-infinite-slider")
 export class TrashInfiniteSlider extends LitElement {
-	@queryAssignedElements({ selector: "img" })
+	@queryAssignedElements()
 	private images!: HTMLElement[]
 
 	@query("div")
@@ -28,9 +23,8 @@ export class TrashInfiniteSlider extends LitElement {
 	private index = 0
 
   static styles = css`
-		div {
+		:host {
 			display: grid;
-			place-items: center;
 			gap: 2rem;
 			grid-auto-flow: column;
 			grid-auto-columns: 100%;
@@ -38,20 +32,27 @@ export class TrashInfiniteSlider extends LitElement {
 			scroll-snap-type: x mandatory;
 		}
 
+		:host.smooth {
+			scroll-behavior: smooth;
+		}
+
 		::slotted(img), img {
 			scroll-snap-align: center;
-			max-width: 100%;
+			object-fit: contain;
+			object-position: center;
+			width: 100%;
+			height: 100%;
 			display: block;
 		}
 	`
 
   render() {
+		this.classList.add("smooth")
+
     return html`
-			<div style=${styleMap({ scrollBehavior: this.smooth_scrolling ? "smooth" : "auto" })}>
-				${this.left_duplicates}
-				<slot @slotchange=${this.update_duplicates}></slot>
-				${this.right_duplicates}
-			</div>
+			${this.left_duplicates}
+			<slot @slotchange=${this.update_duplicates}></slot>
+			${this.right_duplicates}
 		`
   }
 
@@ -69,6 +70,8 @@ export class TrashInfiniteSlider extends LitElement {
 
 		if (is_on_duplicate)
 			this.set_index(this.index, true)
+		else
+			this.dispatchEvent(new CustomEvent("index-change", { detail: this.index }))
 	}
 
 	update_duplicates() {

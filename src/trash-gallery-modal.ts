@@ -1,8 +1,10 @@
 import "./trash-infinte-slider"
+import "./trash-gallery-previewer"
 import { LitElement, css, html } from "lit"
 import { customElement, property, query, state } from "lit/decorators.js"
 import { TrashInfiniteSlider } from "./trash-infinte-slider"
 import { unsafeHTML } from "lit/directives/unsafe-html.js"
+import { TrashGalleryPreviewer } from "./trash-gallery-previewer"
 
 export class TrashGalleryElement {
 	public html: HTMLElement
@@ -28,35 +30,42 @@ export class TrashGalleryModal extends LitElement {
 	@query("trash-infinite-slider")
 	private slider!: TrashInfiniteSlider
 
+	@query("trash-gallery-previewer")
+	private previewer!: TrashGalleryPreviewer
+
 	@state()
 	private current_caption = ""
 
   static styles = css`
 		:host {
-			position: absolute
+			position: absolute;
 		}
 
 		dialog[open] {
 			position: fixed;
+			place-content: stretch;
 			inset: 0;
 			display: grid;
-			place-content: center;
+			grid-template-rows: 1fr 2rem 8rem;
 			height: 100dvh;
+			width: 100dvw;
+			overflow: hidden;
 			margin: 0;
 			padding: 0;
 			border: none;
 			outline: none;
 			background-color: transparent;
 			backdrop-filter: blur(0.2rem);
-			padding: 2rem;
 			box-sizing: border-box;
 		}
 
 		.image-viewer {
+			padding-inline: 2rem;
 			display: grid;
 			grid-template-rows: 1fr;
 			grid-template-columns: 1fr;
 			isolation: isolate;
+			overflow: hidden;
 
 			> * {
 				grid-column: 1;
@@ -85,11 +94,11 @@ export class TrashGalleryModal extends LitElement {
 		.caption {
 			text-align: center;
 			font-size: 2em;
+			background-color: #00000088;
 		}
 
-		img {
-			display: block;
-			max-width: 100%;
+		trash-gallery-previewer {
+			background-color: #00000088;
 		}
 	`
 
@@ -108,15 +117,16 @@ export class TrashGalleryModal extends LitElement {
 
 				<div class="caption">${unsafeHTML(this.current_caption)}</div>
 
-				<div>
-					previewer here
-				</div>
+				<trash-gallery-previewer>
+					${this.elements.map(element => element.html.cloneNode(true))}
+				</trash-gallery-previewer>
 			</dialog>
 		`
   }
 
 	update_index(event: CustomEvent<number>) {
 		this.current_caption = this.elements[event.detail]?.caption ?? ""
+		this.previewer.set_index(event.detail)
 	}
 
 	open(index: number) {
