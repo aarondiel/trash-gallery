@@ -1,8 +1,8 @@
 {
   "name": "trash-gallery",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
+	"main": "./dist/trash-gallery.umd.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

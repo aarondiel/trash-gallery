@@ -1,5 +1,5 @@
 import { LitElement, css, html } from "lit"
-import { customElement, property, query, queryAssignedElements, state } from "lit/decorators.js"
+import { customElement, property, queryAssignedElements, state } from "lit/decorators.js"
 import { mod } from "./utils"
 
 @customElement("trash-infinite-slider")

@@ -3,6 +3,8 @@ import { LitElement, css, html } from "lit"
 import { customElement, query, queryAssignedElements, state } from "lit/decorators.js"
 import { TrashGalleryElement, TrashGalleryModal } from "./trash-gallery-modal";
 
+TrashGalleryModal.getPropertyOptions
+
 @customElement("trash-gallery")
 export class TrashGallery extends LitElement {
 	@queryAssignedElements()
