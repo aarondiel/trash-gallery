@@ -1,53 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" style="color-scheme: light dark;">
   <head>
     <meta charset="UTF-8" />
-		<script defer type="module" src="/src/main.ts"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>trash-gallery</title>
+    <title>Trash Gallery</title>
+    <script type="module" src="/src/trash-gallery.ts"></script>
+
+		<style>
+		img {
+			display: block;
+			max-width: 100%;
+		}
+		</style>
   </head>
-  <body>
-		<main>
-			<section id="gallery">
+  <body style="
+		margin: 0;
+		min-height: 100dvh;
+		display: grid;
+		place-items: start center;
+		place-content: start center;
+	">
+		<h1>trash gallery</h1>
+
+    <trash-gallery style="
+			max-width: min(80rem, 100%);
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+			padding-block: 2rem;
+			gap: 2rem;
+		">
+			<figure style="margin: 0;">
 				<img src="birdeye 1.webp" />
-				<img data-title="birdeye" src="birdeye 2.webp" />
-				<img src="branch day.webp" />
-				<img data-title="bridge" src="bridge.webp" />
-				<img src="castle in the sky 1.webp" />
-				<img data-title="castle in the sky" src="castle in the sky 2.webp" />
-				<img src="city day.webp" />
-				<img data-title="city" src="city evening.webp" />
-				<img src="city.webp" />
-				<img data-title="clouds" src="clouds.webp" />
-				<img src="contract.webp" />
-				<img data-title="credits" src="credits.webp" />
-				<img src="flower field.webp" />
-				<img data-title="hideout" src="hideout entry.webp" />
-				<img src="hideout.webp" />
-				<img data-title="hotel adriano" src="hotel adriano day.webp" />
-				<img src="hotel adriano island.webp" />
-				<img data-title="hotel adriano" src="hotel adriano night.webp" />
-				<img src="house.webp" />
-				<img data-title="lake" src="lake.webp" />
-				<img src="leaves.webp" />
-				<img data-title="park entry" src="park entry.webp" />
-				<img src="pavement.webp" />
-				<img data-title="pavilion" src="pavilion 1.webp" />
-				<img src="pavilion 2.webp" />
-				<img data-title="pillars" src="pillars.webp" />
-				<img src="planes.webp" />
-				<img data-title="poster" src="poster.webp" />
-				<img src="railing.webp" />
-				<img data-title="raindrops" src="raindrops.webp" />
-				<img src="robot.webp" />
-				<img data-title="savoia s21" src="savoia s21.webp" />
-				<img src="sheep.webp" />
-				<img data-title="shore" src="shore.webp" />
-				<img src="talking.webp" />
-				<img data-title="tree" src="tree.webp" />
-				<img src="wine.webp" />
-				<img data-title="working" src="working.webp" />
-			</section>
-		</main>
+				<figcaption>hello <code>world</code></figcaption>
+			</figure>
+
+			<img src="birdeye 2.webp" />
+			<img src="branch day.webp" />
+			<img src="bridge.webp" />
+			<img src="castle in the sky 1.webp" />
+			<img src="castle in the sky 2.webp" />
+			<img src="city.webp" />
+			<img src="city day.webp" />
+			<img src="city evening.webp" />
+			<img src="clouds.webp" />
+			<img src="contract.webp" />
+			<img src="credits.webp" />
+			<img src="flower field.webp" />
+			<img src="hideout.webp" />
+			<img src="hideout entry.webp" />
+			<img src="hotel adriano day.webp" />
+			<img src="hotel adriano island.webp" />
+			<img src="hotel adriano night.webp" />
+			<img src="house.webp" />
+			<img src="lake.webp" />
+			<img src="leaves.webp" />
+			<img src="park entry.webp" />
+			<img src="pavement.webp" />
+			<img src="pavilion 1.webp" />
+			<img src="pavilion 2.webp" />
+			<img src="pillars.webp" />
+			<img src="planes.webp" />
+			<img src="poster.webp" />
+			<img src="railing.webp" />
+			<img src="raindrops.webp" />
+			<img src="robot.webp" />
+			<img src="savoia s21.webp" />
+			<img src="sheep.webp" />
+			<img src="shore.webp" />
+			<img src="talking.webp" />
+			<img src="tree.webp" />
+			<img src="wine.webp" />
+			<img src="working.webp" />
+    </trash-gallery>
   </body>
 </html>
