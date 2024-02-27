@@ -16,6 +16,10 @@ export class TrashGalleryPreviewer extends LitElement {
 			scroll-snap-type: x proximity;
 		}
 
+		:host::-webkit-scrollbar {
+			height: 0;
+		}
+
 		::slotted(*) {
 			scroll-snap-align: center;
 			display: block;

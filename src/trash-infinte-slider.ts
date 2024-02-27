@@ -30,6 +30,15 @@ export class TrashInfiniteSlider extends LitElement {
 			scroll-snap-type: x mandatory;
 		}
 
+		:host::-webkit-scrollbar {
+			height: 0.5rem;
+		}
+
+		:host::-webkit-scrollbar-thumb {
+			background: #888888;
+			border-radius: 100vmax;
+		}
+
 		:host.smooth {
 			scroll-behavior: smooth;
 		}
@@ -74,7 +83,7 @@ export class TrashInfiniteSlider extends LitElement {
 			this.dispatchEvent(new CustomEvent("index-change", { detail: this.index }))
 	}
 
-	update_duplicates() {
+	update_duplicates(): void {
 		if (this.images.length === 0)
 			return
 
@@ -103,27 +112,27 @@ export class TrashInfiniteSlider extends LitElement {
 		this.right_duplicates.forEach(image => this.intersection_observer?.observe(image))
 	}
 
-	get_index() {
+	get_index(): number {
 		return this.index
 	}
 
-	set_index(index: number, disable_smooth_scrolling: boolean = false) {
+	set_index(index: number, disable_smooth_scrolling: boolean = false): void {
+		if (this.index == index)
+			return
+
+		if (index < 0 || index >= this.images.length)
+			return this.set_index(mod(index, this.images.length))
+
 		this.index = index
 
-		if (0 <= this.index && this.index < this.images.length) {
-			this.renderRoot.querySelector("slot")
-				?.assignedElements()
-				.filter(node => node.getAttribute("data-index") === this.index.toString())
-				.forEach(node => node.scrollIntoView({
-					behavior: this.smooth_scrolling && !disable_smooth_scrolling ? "smooth" : "instant"
-				}))
+		this.renderRoot.querySelector("slot")
+			?.assignedElements()
+			.filter(node => node.getAttribute("data-index") === this.index.toString())
+			.forEach(node => node.scrollIntoView({
+				behavior: this.smooth_scrolling && !disable_smooth_scrolling ? "smooth" : "instant"
+			}))
 
-			this.dispatchEvent(new CustomEvent("index-change", { detail: this.index }))
-		} else
-			this.renderRoot.querySelector(`img[data-index="${index}"]`)
-				?.scrollIntoView({
-					behavior: this.smooth_scrolling && !disable_smooth_scrolling ? "smooth" : "instant"
-				})
+		this.dispatchEvent(new CustomEvent("index-change", { detail: this.index }))
 	}
 }
 
