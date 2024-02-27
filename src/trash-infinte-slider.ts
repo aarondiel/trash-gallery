@@ -25,6 +25,7 @@ export class TrashInfiniteSlider extends LitElement {
 			gap: 2rem;
 			grid-auto-flow: column;
 			grid-auto-columns: 100%;
+			place-items: stretch;
 			overflow-x: scroll;
 			scroll-snap-type: x mandatory;
 		}
@@ -37,8 +38,10 @@ export class TrashInfiniteSlider extends LitElement {
 			scroll-snap-align: center;
 			object-fit: contain;
 			object-position: center;
-			width: 100%;
-			height: 100%;
+			min-width: 0;
+			min-height: 0;
+			max-width: 100%;
+			max-height: 100%;
 			display: block;
 		}
 	`
